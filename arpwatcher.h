@@ -33,7 +33,8 @@ public:
 
 
 signals:
-    void changeDetected();
+    void routeUpdated();
+    void changeDetected(bool detected);
     void newCheck(QString ifnet, QString ip, QString mac);
 
 public slots:
@@ -49,6 +50,7 @@ protected:
     NetRoute route;
     QString savedMac;
     int sleepTime;
+    bool detected;
 
     QMutex mutex;
     bool abort;

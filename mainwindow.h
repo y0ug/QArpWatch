@@ -27,7 +27,8 @@ private slots:
     void setIcon(QString name, QString tooltip);
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
     void showMessageSystray(QString title, QString msg, int duration);
-    void changeDetected();
+    void changeDetected(bool detected);
+    void routeUpdated();
     void newCheck(QString ifnet, QString ip, QString mac);
     void quit();
     //void messageClicked();
@@ -42,11 +43,14 @@ private:
     QAction *minimizeAction;
     QAction *restoreAction;
     QAction *quitAction;
+    QAction *refreshRouteAction;
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
 
     ArpWatcher arpWatcher;
+
+    bool lastChanged;
 };
 
 #endif // MAINWINDOW_H

@@ -8,7 +8,8 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    lastChanged(false)
 {
     ui->setupUi(this);
 
@@ -18,15 +19,19 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
             this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
 
-
-    connect(&arpWatcher, SIGNAL(changeDetected()), this,
-            SLOT(changeDetected()));
+    connect(&arpWatcher, SIGNAL(routeUpdated()), this,
+            SLOT(routeUpdated()));
+    connect(&arpWatcher, SIGNAL(changeDetected(bool)), this,
+            SLOT(changeDetected(bool)));
     connect(&arpWatcher, SIGNAL(newCheck(QString,QString,QString)),
             this, SLOT(newCheck(QString,QString,QString)));
 
     setIcon("trash", QApplication::applicationName());
 
     trayIcon->show();
+
+    /* To show the set-up on start */
+    routeUpdated();
 
     arpWatcher.start();
 }
@@ -36,13 +41,49 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::changeDetected()
+void MainWindow::changeDetected(bool detected)
 {
-    showMessageSystray(QApplication::applicationName(),
-                       "Arp poisoning in progress ...", 3);
+    if ( detected && !lastChanged){
+        QString msg = "Arp poisoning in progress ...";
+        showMessageSystray(QApplication::applicationName(),
+                           msg, 30);
 
-    setIcon("bad", QApplication::applicationName());
+        ui->logText->append(tr("<em>%1</em> %2").
+                            arg(QTime::currentTime().toString(), msg));
+
+        setIcon("bad", msg);
+
+    }else if (!detected && lastChanged){
+        QString msg = "Arp poisoning stop ...";
+
+        showMessageSystray(QApplication::applicationName(),
+                           msg, 10);
+
+        ui->logText->append(tr("<em>%1</em> %2").
+                            arg(QTime::currentTime().toString(), msg));
+
+        setIcon("trash", QApplication::applicationName());
+    }
+
+
+    lastChanged = detected;
 }
+
+void MainWindow::routeUpdated()
+{
+    NetRoute route = arpWatcher.getRoute();
+    QString mac = arpWatcher.getSavedMac();
+
+    QString msg = tr("watch gateway %1 with %2 on %3").
+        arg(route.gate, mac, route.iface);
+
+    ui->logText->append(tr("<em>%1</em> %2").
+                        arg(QTime::currentTime().toString(), msg));
+
+    showMessageSystray(QApplication::applicationName(),
+                       msg, 10);
+}
+
 void MainWindow::newCheck(QString ifnet, QString ip, QString mac)
 {
     ui->logText->append(tr("<em>%1</em> %2 &lt;-&gt; %3 with %4").
@@ -107,9 +148,11 @@ void MainWindow::showMessageSystray(QString title, QString msg, int duration)
 
 void MainWindow::createActions()
 {
+    refreshRouteAction = new QAction(tr("Update default route"), this);
+    connect(refreshRouteAction, SIGNAL(triggered()), &arpWatcher, SLOT(updateRoute()));
+
     minimizeAction = new QAction(tr("Mi&nimize"), this);
     connect(minimizeAction, SIGNAL(triggered()), this, SLOT(hide()));
-
 
     restoreAction = new QAction(tr("&Restore"), this);
     connect(restoreAction, SIGNAL(triggered()), this, SLOT(showNormal()));
@@ -121,6 +164,8 @@ void MainWindow::createActions()
 void MainWindow::createTrayIcon()
 {
     trayIconMenu = new QMenu(this);
+    trayIconMenu->addAction(refreshRouteAction);
+    trayIconMenu->addSeparator();
     trayIconMenu->addAction(minimizeAction);
     trayIconMenu->addAction(restoreAction);
     trayIconMenu->addSeparator();

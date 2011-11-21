@@ -2,7 +2,8 @@
 
 
 ArpWatcher::ArpWatcher() :
-    QThread(), sleepTime(5), abort(false)
+    QThread(),
+    sleepTime(5), abort(false), detected(false)
 {
     updateRoute();
 }
@@ -17,14 +18,21 @@ void ArpWatcher::run()
     while(!getAbort()){
         mutex.lock();
         QString mac = NetworkUtils::getArpFromHost(route.gate, route.iface);
-        qDebug() << mac;
         emit newCheck(route.iface, route.gate, mac);
         mutex.unlock();
+
         if ( savedMac != mac){
-            qDebug() << "HACK!!!!";
-            emit changeDetected();
+            detected = true;
+        }else{
+            detected = false;
         }
+
+        emit changeDetected(detected);
+
+
         sleep(sleepTime);
+
+
     }
 
     exit(0);
@@ -36,7 +44,8 @@ void ArpWatcher::updateRoute()
 
     route = NetworkUtils::getDefaultRouteIp();
     savedMac = NetworkUtils::getArpFromHost(route.gate, route.iface);
-    qDebug() << "updateRoute" << route.gate << savedMac;
 
     mutex.unlock();
+
+    emit routeUpdated();
 }
