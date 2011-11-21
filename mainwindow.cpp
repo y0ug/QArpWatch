@@ -9,7 +9,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    lastChanged(false)
+    lastChanged(false), lastNetworkChanged(true)
 {
     ui->setupUi(this);
 
@@ -21,6 +21,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(&arpWatcher, SIGNAL(routeUpdated()), this,
             SLOT(routeUpdated()));
+    connect(&arpWatcher, SIGNAL(networkChanged(bool)), this,
+            SLOT(networkChanged(bool)));
     connect(&arpWatcher, SIGNAL(changeDetected(bool)), this,
             SLOT(changeDetected(bool)));
     connect(&arpWatcher, SIGNAL(newCheck(QString,QString,QString)),
@@ -39,6 +41,35 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::networkChanged(bool changed)
+{
+    if(!changed && lastNetworkChanged){
+        QString msg = "Network down...";
+
+        showMessageSystray(QApplication::applicationName(),
+                           msg, 10);
+
+        ui->logText->append(tr("<em>%1</em> %2").
+                            arg(QTime::currentTime().toString(), msg));
+
+        setIcon("heart", QApplication::applicationName());
+    }else if(changed && !lastNetworkChanged){
+        QString msg = "Network up...";
+
+        showMessageSystray(QApplication::applicationName(),
+                           msg, 10);
+
+        ui->logText->append(tr("<em>%1</em> %2").
+                            arg(QTime::currentTime().toString(), msg));
+
+        setIcon("trash", QApplication::applicationName());
+
+        //arpWatcher.updateRoute();
+    }
+
+    lastNetworkChanged = changed;
 }
 
 void MainWindow::changeDetected(bool detected)

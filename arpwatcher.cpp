@@ -18,17 +18,23 @@ void ArpWatcher::run()
     while(!getAbort()){
         mutex.lock();
         QString mac = NetworkUtils::getArpFromHost(route.gate, route.iface);
-        emit newCheck(route.iface, route.gate, mac);
-        mutex.unlock();
+        bool up = true;
 
-        if ( savedMac != mac){
-            detected = true;
+        if (mac.length() == 0){
+            up = false;
         }else{
-            detected = false;
+            if ( savedMac != mac){
+                detected = true;
+            }else{
+                detected = false;
+            }
+
+            emit changeDetected(detected);
+            emit newCheck(route.iface, route.gate, mac);
         }
 
-        emit changeDetected(detected);
-
+        emit networkChanged(up);
+        mutex.unlock();
 
         sleep(sleepTime);
 

@@ -28,6 +28,7 @@ private slots:
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
     void showMessageSystray(QString title, QString msg, int duration);
     void changeDetected(bool detected);
+    void networkChanged(bool changed);
     void routeUpdated();
     void newCheck(QString ifnet, QString ip, QString mac);
     void quit();
@@ -51,6 +52,7 @@ private:
     ArpWatcher arpWatcher;
 
     bool lastChanged;
+    bool lastNetworkChanged;
 };
 
 #endif // MAINWINDOW_H

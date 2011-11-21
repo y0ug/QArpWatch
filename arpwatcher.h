@@ -36,6 +36,7 @@ signals:
     void routeUpdated();
     void changeDetected(bool detected);
     void newCheck(QString ifnet, QString ip, QString mac);
+    void networkChanged(bool changed);
 
 public slots:
     void setAbort(bool b){
