@@ -1,0 +1,15 @@
+*.o
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+Debug/
+Release/
+*.log
+*.exe
+*.dll
+PROJECT
+Thumbs.db
+desktop.ini
+.DS_Store
+*~
+*.pro.user
