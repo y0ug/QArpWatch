@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QSystemTrayIcon>
+#include <QLabel>
 #include <QMainWindow>
 
 #include "arpwatcher.h"
@@ -47,6 +48,8 @@ private:
     QAction *restoreAction;
     QAction *quitAction;
     QAction *refreshRouteAction;
+
+    QLabel *statusLabel;
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;

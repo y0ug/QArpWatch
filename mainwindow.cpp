@@ -17,6 +17,9 @@ MainWindow::MainWindow(QWidget *parent) :
     createActions();
     createTrayIcon();
 
+    statusLabel = new QLabel(this);
+    ui->statusBar->addWidget(statusLabel, 1);
+
     connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
             this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
 
@@ -56,6 +59,8 @@ void MainWindow::networkChanged(bool changed)
                             arg(QTime::currentTime().toString(), msg));
 
         setIcon("heart", QApplication::applicationName());
+
+        statusLabel->setText(msg);
     }else if(changed && !lastNetworkChanged){
         QString msg = "Network up...";
 
@@ -66,6 +71,14 @@ void MainWindow::networkChanged(bool changed)
                             arg(QTime::currentTime().toString(), msg));
 
         setIcon("trash", QApplication::applicationName());
+
+        NetRoute route = arpWatcher.getRoute();
+        QString mac = arpWatcher.getSavedMac();
+
+        msg = tr("watch gateway %1 with %2 on %3").
+            arg(route.gate, mac, route.iface);
+
+        statusLabel->setText(msg);
 
         //arpWatcher.updateRoute();
     }
@@ -114,6 +127,8 @@ void MainWindow::routeUpdated()
 
     showMessageSystray(QApplication::applicationName(),
                        msg, 10);
+
+    statusLabel->setText(msg);
 }
 
 void MainWindow::newCheck(QString ifnet, QString ip, QString mac)
