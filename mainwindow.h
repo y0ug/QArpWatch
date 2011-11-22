@@ -34,6 +34,8 @@ private slots:
     void quit();
     //void messageClicked();
 
+    void on_action_customRoute_triggered();
+
 private:
     void createIconGroupBox();
     void createActions();

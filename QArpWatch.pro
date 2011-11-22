@@ -13,16 +13,22 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     networkutils.cpp \
-    arpwatcher.cpp
+    arpwatcher.cpp \
+    dialogcustomroute.cpp
 
 HEADERS  += mainwindow.h \
     networkutils.h \
-    arpwatcher.h
+    arpwatcher.h \
+    dialogcustomroute.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    dialogcustomroute.ui
 
 RESOURCES += \
     ressources.qrc
+
+
+
 
 
 

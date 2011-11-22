@@ -19,8 +19,21 @@ public:
         return route;
     }
 
+    void setRoute(NetRoute route){
+        mutex.lock();
+        this->route = route;
+        mutex.unlock();
+        emit routeUpdated();
+    }
+
     QString getSavedMac(){
         return savedMac;
+    }
+
+    void setSavedMac(QString mac){
+        mutex.lock();
+        savedMac = mac;
+        mutex.unlock();
     }
 
     bool getAbort(){

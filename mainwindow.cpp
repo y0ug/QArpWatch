@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "networkutils.h"
 
+#include "dialogcustomroute.h"
 #include "arpwatcher.h"
 
 #include <QtGui>
@@ -179,8 +180,7 @@ void MainWindow::showMessageSystray(QString title, QString msg, int duration)
 
 void MainWindow::createActions()
 {
-    refreshRouteAction = new QAction(tr("Update default route"), this);
-    connect(refreshRouteAction, SIGNAL(triggered()), &arpWatcher, SLOT(updateRoute()));
+    connect(ui->action_refreshRoute, SIGNAL(triggered()), &arpWatcher, SLOT(updateRoute()));
 
     minimizeAction = new QAction(tr("Mi&nimize"), this);
     connect(minimizeAction, SIGNAL(triggered()), this, SLOT(hide()));
@@ -188,19 +188,19 @@ void MainWindow::createActions()
     restoreAction = new QAction(tr("&Restore"), this);
     connect(restoreAction, SIGNAL(triggered()), this, SLOT(showNormal()));
 
-    quitAction = new QAction(tr("&Quit"), this);
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(quit()));
+    connect(ui->action_Quitter, SIGNAL(triggered()), this, SLOT(quit()));
 }
 
 void MainWindow::createTrayIcon()
 {
     trayIconMenu = new QMenu(this);
-    trayIconMenu->addAction(refreshRouteAction);
+    trayIconMenu->addAction(ui->action_refreshRoute);
+    trayIconMenu->addAction(ui->action_customRoute);
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(minimizeAction);
     trayIconMenu->addAction(restoreAction);
     trayIconMenu->addSeparator();
-    trayIconMenu->addAction(quitAction);
+    trayIconMenu->addAction(ui->action_Quitter);
 
     trayIcon = new QSystemTrayIcon(this);
     trayIcon->setContextMenu(trayIconMenu);
@@ -208,10 +208,27 @@ void MainWindow::createTrayIcon()
 
 void MainWindow::quit()
 {
+    /*ui->logText->append(tr("<em>%1</em> Please wait exit in progress...").
+                        arg(QTime::currentTime().toString()));*/
+
+
     if(!arpWatcher.getAbort()){
         arpWatcher.setAbort(true);
         arpWatcher.wait();
     }
 
     qApp->quit();
+}
+
+void MainWindow::on_action_customRoute_triggered()
+{
+    DialogCustomRoute diag(this);
+    diag.setRoute(arpWatcher.getRoute());
+    diag.setMac(arpWatcher.getSavedMac());
+    if (diag.exec() != 1 ){
+        return;
+    }
+
+    arpWatcher.setSavedMac(diag.getMac());
+    arpWatcher.setRoute(diag.getRoute());
 }
