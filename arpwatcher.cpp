@@ -22,7 +22,9 @@ void ArpWatcher::run()
 
         if (mac.length() == 0){
             up = false;
+            emit networkChanged(up);
         }else{
+            emit networkChanged(up);
             if ( savedMac != mac){
                 detected = true;
             }else{
@@ -33,7 +35,7 @@ void ArpWatcher::run()
             emit newCheck(route.iface, route.gate, mac);
         }
 
-        emit networkChanged(up);
+
         mutex.unlock();
 
         sleep(sleepTime);

@@ -15,27 +15,31 @@ NetworkUtils::NetworkUtils()
 
         QString mac = "";
 
-        QString program = "arp";
+        QString program = "C:\\WINDOWS\\system32\\arp";
         QStringList arguments;
         arguments << "-a";
 
         QProcess *myProcess = new QProcess();
         myProcess->start(program, arguments);
+        myProcess->waitForReadyRead();
+
         while(myProcess->canReadLine()){
             QString line = myProcess->readLine();
-            if(line.startsWith("  " + ip)){
-                qDebug() << line;
-                QStringList list = line.split(" ");
+            line = line.trimmed();
+            //qDebug() << line;
+            if(line.startsWith(ip)){
+                QStringList list = line.split(" ", QString::SkipEmptyParts);
                 if ( list.count() != 3 )
                     continue;
 
-                qDebug() << list[2];
-                mac = list[2];
-
+                mac = list[1].trimmed();
+                //qDebug() << mac;
                 break;
             }
         }
-
+        /*if (myProcess->error()){
+            qDebug() << myProcess->errorString();
+        }*/
         myProcess->close();
 
         return mac;
@@ -45,25 +49,32 @@ NetworkUtils::NetworkUtils()
     {
         NetRoute route;
 
-        QString program = "route";
+        route.gate = "0.0.0.0";
+        route.dest = "0.0.0.0";
+        route.iface = "unavailable";
+
+        QString program = "C:\\WINDOWS\\system32\\route";
         QStringList arguments;
         arguments << "PRINT";
 
         QProcess *myProcess = new QProcess();
         myProcess->start(program, arguments);
+        myProcess->waitForReadyRead();
+        //if (myProcess->error()){
+            //qDebug() << myProcess->errorString();
+        //}
         while(myProcess->canReadLine()){
             QString line = myProcess->readLine();
-            if(line.startsWith("Default Gateway:")){
-                qDebug() << line;
-                QStringList list = line.split(":");
-                if ( list.count() != 3)
+            line = line.trimmed();
+            if(line.startsWith("0.0.0.0")){
+                QStringList list = line.split(" ", QString::SkipEmptyParts);
+                if ( list.count() != 5)
                     continue;
 
-                qDebug() << list[1];
-
-                route.gate = list[1];
+                route.gate = list[2].trimmed();
+                //qDebug() << route.gate;
                 route.dest = "0.0.0.0";
-                route.iface = "unavailable";
+                route.iface = list[3].trimmed();
 
                 break;
             }
