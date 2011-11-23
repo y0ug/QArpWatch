@@ -1,0 +1,15 @@
+QArpWatch
+Simple GUI that check if your gateway mac adresse change, usefull to detected MITM by arp poisoning.
+Actually you need to be on clean network before run the software, it can't detect if the network look suspicious maybe in a future version.
+
+A last win32 build is availble here:
+https://github.com/downloads/y0ug/QArpWatch/QArpWatch.zip
+
+To build it
+$ qmake
+$ make
+$ ./QArpWatch
+
+
+Ubuntu dep to build it
+$ sudo apt-get install qt4-dev-tools
