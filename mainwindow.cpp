@@ -159,7 +159,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::setIcon(QString name, QString tooltip)
 {
+#ifdef Q_WS_X11
     QIcon icon = QIcon(":/images/"+name+".svg");
+#else
+    QIcon icon = QIcon(":/images/"+name+".png");
+#endif
     trayIcon->setIcon(icon);
     setWindowIcon(icon);
 
