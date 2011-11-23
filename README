@@ -1,6 +1,9 @@
 QArpWatch
-Simple interface that checks if the MAC address of your gateway is changed, usefull to detected arp poisoning.
-Actually you need to be on clean network before run the software, it can't detect if the network look suspicious, maybe in a future version.
+Simple interface that checks if the MAC address of your gateway is changed,
+usefull to detected arp poisoning.
+
+Actually you need to be on clean network before run the software,
+it can't detect if the network look suspicious, maybe in a future version.
 
 Sorry for the icons, that come from Qt example. I don't have time to find cool icons.
 
@@ -23,4 +26,12 @@ make
 Ubuntu dep to build it
 $ sudo apt-get install qt4-dev-tools
 
-Don't have review on mac, I don't know if /proc/net/route exist and have the same format as Linux
+Don't have review on mac, I don't know if /proc/net/route exist and
+have the same format as Linux
+
+
+Some bugs may appear especially on windows, so feel free to report bugs.
+
+Currently there is a small bug, if you don't use the network for some time,
+the software can go in offline mode, don't worry if you launched a web page or
+anything else, it returns to online mode
