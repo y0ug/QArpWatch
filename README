@@ -1,6 +1,5 @@
 QArpWatch
-Simple interface that checks if the MAC address of your gateway is changed,
-useful to detected arp poisoning.
+ Simple interface that checks if the MAC address of your gateway is changed, useful to detect arp poisoning
 
 Actually you need to be on clean network before run the software,
 it can't detect if the network look suspicious, maybe in a future version.
