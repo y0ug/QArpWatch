@@ -15,6 +15,7 @@ NetworkUtils::NetworkUtils()
 
         QString mac = "";
 
+        /* Bad way, tired don't won't to look the Win32 API */
         QString program = "C:\\WINDOWS\\system32\\arp";
         QStringList arguments;
         arguments << "-a";
@@ -53,6 +54,7 @@ NetworkUtils::NetworkUtils()
         route.dest = "0.0.0.0";
         route.iface = "unavailable";
 
+        /* Bad way, tired don't won't to look the Win32 API */
         QString program = "C:\\WINDOWS\\system32\\route";
         QStringList arguments;
         arguments << "PRINT";
@@ -86,23 +88,11 @@ NetworkUtils::NetworkUtils()
     }
 
 #else
-    #include <sys/types.h>
-    #include <sys/socket.h>
-    #include <netinet/in.h>
-    #include <arpa/inet.h>
-    #include <arpa/nameser.h>
 
-    #include <sys/ioctl.h>
-    #include <net/if_arp.h>
+    #include <arpa/inet.h> /* inet_ntoa, inet_naton */
+    #include <sys/ioctl.h> /* ioctl */
+    #include <net/if_arp.h> /* ARPHRD_ETHER */
 
-    #include <ctype.h>
-    #include <errno.h>
-    #include <netdb.h>
-    #include <resolv.h>
-    #include <stdlib.h>
-    #include <string.h>
-    #include <stdio.h>
-    #include <unistd.h>
 
     #define BUFF_SIZE 1024
     #define INTERFACE_NAME_SIZE 8
@@ -141,85 +131,85 @@ NetworkUtils::NetworkUtils()
     #define RTF_REJECT      0x0200          /* Reject route                 */
 
     /* this is a 2.0.36 flag from /usr/src/linux/include/linux/route.h */
-    #define RTF_NOTCACHED   0x0400          /* this route isn't cached        */
+    #define RTF_NOTCACHED   0x0400          /* this route isn't cached       */
 
-    static char *ethernet_mactoa(struct sockaddr *addr)
+    QString NetworkUtils::ethernet_mactoa(struct sockaddr *addr)
     {
-        static char buff[256];
+        char buff[256];
         unsigned char *ptr = (unsigned char *) addr->sa_data;
 
         sprintf(buff, "%02X:%02X:%02X:%02X:%02X:%02X",
                 (ptr[0] & 0377), (ptr[1] & 0377), (ptr[2] & 0377),
                 (ptr[3] & 0377), (ptr[4] & 0377), (ptr[5] & 0377));
 
-        return (buff);
+        return QString(buff);
     }
 
 
 
     NetRoute NetworkUtils::getDefaultRouteIp()
     {
-        char buf[BUFF_SIZE];
+        //char buf[BUFF_SIZE];
         //char ipgate[IP_SIZE], ipmask[IP_SIZE];
 
-        char iface[INTERFACE_NAME_SIZE], dest[9], gate[9], mask[9];
-        int flags, refcnt, use, metric, mtu, window, rtt;
+        NetRoute route;
 
-        FILE *fp = fopen(_PATH_PROCNET_ROUTE, "r");
-
-        if (!fp) {
-            //perror(_PATH_PROCNET_ROUTE);
-            qDebug() << "INET (IPv4) not configured in this system.\n";
-            return NetRoute();
+        QFile f(_PATH_PROCNET_ROUTE);
+        if (! f.open(QIODevice::ReadOnly) ){
+            qDebug() << "can't open " << _PATH_PROCNET_ROUTE;
+            return route;
         }
 
-
-        while (fgets(buf, sizeof(buf), fp) != NULL) {
-            int n;
-            //struct prefix_ipv4 p;
+        QTextStream str(&f);
+        do{
             struct in_addr tmpmask;
             struct in_addr gateway;
             struct in_addr destination;
 
-            n = sscanf (buf, "%s %s %s %x %d %d %d %s %d %d %d",
-                        iface, dest, gate, &flags, &refcnt, &use, &metric,
-                        mask, &mtu, &window, &rtt);
+            //QString iface, dest, gate, mask;
+            char iface[INTERFACE_NAME_SIZE], dest[9], gate[9], mask[9];
+            int flags, refcnt, use, metric, mtu, window, rtt;
+            int n;
 
-            if (n != 11)
-            {
+            QString line = str.readLine();
+
+            /* Need to find a alternative to this sscanf */
+            n = sscanf (line.toLocal8Bit().data(), "%s %s %s %x %d %d %d %s %d %d %d",
+                            iface, dest, gate, &flags, &refcnt, &use, &metric,
+                            mask, &mtu, &window, &rtt);
+            /*line >> iface >> dest >> gate >> flags >> refcnt >> use
+                 >> metric >> mask >> mtu >> window >> rtt;*/
+
+            if (n != 11) {
                 //qDebug() << "can't read all of routing information" << n;
                 continue;
             }
 
+            /* We need a route up and a gateway */
             if (! (flags & RTF_UP))
               continue;
             if (! (flags & RTF_GATEWAY))
               continue;
 
-
+            /* Need to find a alternative to this sscanf */
             sscanf (dest, "%lX", (unsigned long *)&destination);
             sscanf (mask, "%lX", (unsigned long *)&tmpmask);
             sscanf (gate, "%lX", (unsigned long *)&gateway);
 
-            /*
-            printf("%s :\t", iface);
-            printf("%s/", inet_ntoa(gateway));
-            printf("%s\n", inet_ntoa(tmpmask));
-            */
-            NetRoute route;
+
             route.iface = QString(iface);
             route.dest = QString(inet_ntoa(destination));
             route.mask = QString(inet_ntoa(tmpmask));
             route.gate = QString(inet_ntoa(gateway));
 
-            (void) fclose(fp);
-            return route;
-        }
+            break;
+        }while(!str.atEnd());
 
-        (void) fclose(fp);
+        f.close();
 
-        return NetRoute();
+        return route;
     }
+
 
     QString NetworkUtils::getArpFromHost(QString ip, QString iface)
     {
@@ -228,6 +218,9 @@ NetworkUtils::NetworkUtils()
         struct arpreq       areq;
         struct sockaddr_in *sin;
         struct in_addr      ipaddr;
+
+        const char          *pip = ip.toLocal8Bit().data();
+        const char          *piface = iface.toLocal8Bit().data();
 
         /* Get an internet domain socket. */
         if ((s = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
@@ -240,8 +233,8 @@ NetworkUtils::NetworkUtils()
         sin = (struct sockaddr_in *) &areq.arp_pa;
         sin->sin_family = AF_INET;
 
-        if (inet_aton(ip.toStdString().c_str(), &ipaddr) == 0) {
-            qDebug() << QObject::tr("invalid numbers-and-dots IP address %s").arg(ip);
+        if (inet_aton(pip, &ipaddr) == 0) {
+            qDebug() << "invalid numbers-and-dots IP address " << ip;
             return QString();
         }
 
@@ -249,17 +242,13 @@ NetworkUtils::NetworkUtils()
         sin = (struct sockaddr_in *) &areq.arp_ha;
         sin->sin_family = ARPHRD_ETHER;
 
-        strncpy(areq.arp_dev, iface.toStdString().c_str(), 15);
+        strncpy(areq.arp_dev, piface, 15);
 
         if (ioctl(s, SIOCGARP, (caddr_t) &areq) == -1) {
             qDebug() << "unable to make ARP request, error";
             return QString();
         }
 
-        /*printf("%s  -> %s\n", ip.toStdString().c_str(),
-                        inet_ntoa(&((struct sockaddr_in *) &areq.arp_pa)->sin_addr),
-                        ethernet_mactoa(&areq.arp_ha));*/
-
-        return QString(ethernet_mactoa(&areq.arp_ha));
+        return ethernet_mactoa(&areq.arp_ha);
     }
 #endif

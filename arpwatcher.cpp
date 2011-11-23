@@ -3,8 +3,11 @@
 
 ArpWatcher::ArpWatcher() :
     QThread(),
-    sleepTime(5), abort(false), detected(false)
+    sleepTime(5)
 {
+    abort = false;
+    detected = false;
+
     updateRoute();
 }
 

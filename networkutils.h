@@ -39,6 +39,11 @@ public:
     NetworkUtils();
     static NetRoute getDefaultRouteIp();
     static QString getArpFromHost(QString ip, QString iface);
+
+protected:
+#ifndef Q_WS_WIN
+    static QString ethernet_mactoa(struct sockaddr *addr);
+#endif
 };
 
 #endif // ROUTENET_H
