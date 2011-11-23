@@ -7,6 +7,8 @@ it can't detect if the network look suspicious, maybe in a future version.
 
 Sorry for the icons, that come from Qt example. I don't have time to find cool icons.
 
+Is the beggining of QArpWatch so if you want feature make a issue with your request or email me.
+
 Last win32 build is availble here:
 https://github.com/downloads/y0ug/QArpWatch/QArpWatch.zip
 
@@ -30,7 +32,7 @@ Don't have review on mac, I don't know if /proc/net/route exist and
 have the same format as Linux
 
 
-Some bugs may appear especially on windows, so feel free to report bugs.
+Some bugs may appear especially on windows, so feel free to report it.
 
 Currently there is a small bug, if you don't use the network for some time,
 the software can go in offline mode, don't worry if you launched a web page or
