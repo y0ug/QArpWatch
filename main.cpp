@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     QApplication::setApplicationName("QArpWatch");
+    QApplication::setApplicationVersion("0.0.1");
 
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
         QMessageBox::critical(0, QApplication::applicationName(),

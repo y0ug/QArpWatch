@@ -24,6 +24,7 @@
 #include "networkutils.h"
 
 #include "dialogcustomroute.h"
+#include "dialogabout.h"
 #include "arpwatcher.h"
 
 #include <QtGui>
@@ -271,4 +272,10 @@ void MainWindow::on_action_customRoute_triggered()
 
     arpWatcher.setSavedMac(diag.getMac());
     arpWatcher.setRoute(diag.getRoute());
+}
+
+void MainWindow::on_action_About_triggered()
+{
+    DialogAbout diag(this);
+    diag.exec();
 }

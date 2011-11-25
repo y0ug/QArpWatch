@@ -14,21 +14,27 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     networkutils.cpp \
     arpwatcher.cpp \
-    dialogcustomroute.cpp
+    dialogcustomroute.cpp \
+    dialogabout.cpp
 
 HEADERS  += mainwindow.h \
     networkutils.h \
     arpwatcher.h \
-    dialogcustomroute.h
+    dialogcustomroute.h \
+    dialogabout.h
 
 FORMS    += mainwindow.ui \
-    dialogcustomroute.ui
+    dialogcustomroute.ui \
+    dialogabout.ui
 
 RESOURCES += \
     ressources.qrc
 
 OTHER_FILES += \
     README
+
+
+
 
 
 
