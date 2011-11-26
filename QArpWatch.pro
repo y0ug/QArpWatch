@@ -9,6 +9,11 @@ QT       += core gui
 TARGET = QArpWatch
 TEMPLATE = app
 
+# Windows ico
+RC_FILE = ressources.rc
+
+# Mac ico use  Icon Composer to build icns file
+# ICON = qarpwatch.icns
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -31,7 +36,9 @@ RESOURCES += \
     ressources.qrc
 
 OTHER_FILES += \
-    README
+    README \
+    ressources.rc
+
 
 
 
